@@ -1,6 +1,6 @@
 {
   "global": {
-    "files": "/input/src/**/*.*",
+    "files": "/src/**/*.*",
     "exclude": [],
     "skipGeneratedGatewayClasses": true,
     "skipGeneratedPersistentClasses": true,
@@ -14,10 +14,6 @@
       "files": "/src/**/*.*"
     }
   ],
-  "rename": {
-    "output": "output",
-    "patterns": [{"type": "CLAS|INTF", "oldName": "z(.*)", "newName": "$1"}]
-  },
   "syntax": {
     "version": "v702",
     "errorNamespace": "^(Z|Y|LCL_|TY_|LIF_)",
