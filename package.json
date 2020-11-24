@@ -6,9 +6,9 @@
   "main": "index.js",
   "scripts": {
     "clone": "git clone https://github.com/sbcgua/ajson input",
-    "lint_result": "abaplint abaplint_result.json",
-    "fix": "abaplint abaplint_result.json --fix",
-    "rename": "abaplint abaplint_rename.json --rename && cp output/input/src/* src/",
+    "lint_result": "abaplint abaplint.json",
+    "fix_result": "abaplint abaplint.json --fix",
+    "rename": "abaplint abaplint_rename.json --rename && rm src/* && cp output/input/src/* src/",
     "mirror": "rm -rf input && rm -rf output && npm run clone && npm run lint && npm run rename"
   },
   "repository": {
