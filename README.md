@@ -1,2 +1,2 @@
 # ajson_mirror
-ajson mirror to zcl_abapgit_
+Mirror of (ajson)[https://github.com/sbcgua/ajson] mirror to zcl_abapgit_ namespace

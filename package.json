@@ -1,0 +1,26 @@
+{
+  "name": "ajson_mirror",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Mirror of (ajson)[https://github.com/sbcgua/ajson] mirror to zcl_abapgit_ namespace",
+  "main": "index.js",
+  "scripts": {
+    "clone": "git clone https://github.com/sbcgua/ajson input",
+    "lint": "abaplint",
+    "rename": "abaplint --rename",
+    "mirror": "rm -rf input && npm run clone && npm run lint && npm run rename"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abapGit/ajson_mirror.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/abapGit/ajson_mirror/issues"
+  },
+  "homepage": "https://github.com/abapGit/ajson_mirror#readme",
+  "dependencies": {
+    "@abaplint/cli": "^2.60.9"
+  }
+}
