@@ -102,7 +102,7 @@ CLASS lcl_json_parser DEFINITION FINAL.
   PRIVATE SECTION.
 
     TYPES:
-      ty_stack_tt TYPE STANDARD TABLE OF REF TO zCL_abapgit_ajson=>ty_node.
+      ty_stack_tt TYPE STANDARD TABLE OF REF TO zcl_abapgit_ajson=>ty_node.
 
     DATA mt_stack TYPE ty_stack_tt.
 

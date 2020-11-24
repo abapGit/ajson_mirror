@@ -9,7 +9,7 @@
     "lint_result": "abaplint abaplint.json",
     "fix_result": "abaplint abaplint.json --fix",
     "rename": "abaplint abaplint_rename.json --rename && rm src/* && cp output/input/src/* src/",
-    "mirror": "rm -rf input && rm -rf output && npm run clone && npm run lint && npm run rename"
+    "mirror": "rm -rf input && rm -rf output && npm run clone && npm run rename"
   },
   "repository": {
     "type": "git",

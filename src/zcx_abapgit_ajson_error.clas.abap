@@ -44,7 +44,7 @@ public section.
       !IV_MSG type STRING
       !IV_LOCATION type STRING optional
     raising
-      zCX_abapgit_ajson_ERROR .
+      zcx_abapgit_ajson_error .
 protected section.
 private section.
 ENDCLASS.
@@ -93,7 +93,7 @@ method raise.
     ls_msg = lv_tmp.
   endif.
 
-  raise exception type zCX_abapgit_ajson_ERROR
+  raise exception type zcx_abapgit_ajson_error
     exporting
       textid   = zcx_ajson_error
       message  = iv_msg
