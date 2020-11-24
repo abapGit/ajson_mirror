@@ -24,44 +24,44 @@ INTERFACE zif_abapgit_ajson_reader
   METHODS get_boolean
     IMPORTING
       iv_path TYPE string
-    returning
-      value(rv_value) type abap_bool.
-  methods get_integer
-    importing
-      iv_path type string
-    returning
-      value(rv_value) type i.
-  methods get_number
-    importing
-      iv_path type string
-    returning
-      value(rv_value) type f.
-  methods get_date
-    importing
-      iv_path type string
-    returning
-      value(rv_value) type d.
-  methods get_string
-    importing
-      iv_path type string
-    returning
-      value(rv_value) type string.
-  methods slice
-    importing
-      iv_path type string
-    returning
-      value(ri_json) type ref to zIF_abapgit_ajson_READER.
-  methods to_abap
-    exporting
-      ev_container type any
-    raising
-      zCX_abapgit_ajson_ERROR.
-  methods array_to_string_table
-    importing
-      iv_path type string
-    returning
-      value(rt_string_table) type string_table
-    raising
-      zCX_abapgit_ajson_ERROR.
+    RETURNING
+      VALUE(rv_value) TYPE abap_bool.
+  METHODS get_integer
+    IMPORTING
+      iv_path TYPE string
+    RETURNING
+      VALUE(rv_value) TYPE i.
+  METHODS get_number
+    IMPORTING
+      iv_path TYPE string
+    RETURNING
+      VALUE(rv_value) TYPE f.
+  METHODS get_date
+    IMPORTING
+      iv_path TYPE string
+    RETURNING
+      VALUE(rv_value) TYPE d.
+  METHODS get_string
+    IMPORTING
+      iv_path TYPE string
+    RETURNING
+      VALUE(rv_value) TYPE string.
+  METHODS slice
+    IMPORTING
+      iv_path TYPE string
+    RETURNING
+      VALUE(ri_json) TYPE REF TO zif_abapgit_ajson_reader.
+  METHODS to_abap
+    EXPORTING
+      ev_container TYPE any
+    RAISING
+      zcx_abapgit_ajson_error.
+  METHODS array_to_string_table
+    IMPORTING
+      iv_path TYPE string
+    RETURNING
+      VALUE(rt_string_table) TYPE string_table
+    RAISING
+      zcx_abapgit_ajson_error.
 
-endinterface.
+ENDINTERFACE.

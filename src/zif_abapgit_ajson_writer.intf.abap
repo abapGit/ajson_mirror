@@ -31,40 +31,40 @@ INTERFACE zif_abapgit_ajson_writer
     IMPORTING
       iv_path TYPE string
       iv_val TYPE i
-    raising
-      zCX_abapgit_ajson_ERROR.
+    RAISING
+      zcx_abapgit_ajson_error.
 
-  methods set_date
-    importing
-      iv_path type string
-      iv_val type d
-    raising
-      zCX_abapgit_ajson_ERROR.
+  METHODS set_date
+    IMPORTING
+      iv_path TYPE string
+      iv_val TYPE d
+    RAISING
+      zcx_abapgit_ajson_error.
 
-  methods set_null
-    importing
-      iv_path type string
-    raising
-      zCX_abapgit_ajson_ERROR.
+  METHODS set_null
+    IMPORTING
+      iv_path TYPE string
+    RAISING
+      zcx_abapgit_ajson_error.
 
-  methods delete
-    importing
-      iv_path type string
-    raising
-      zCX_abapgit_ajson_ERROR.
+  METHODS delete
+    IMPORTING
+      iv_path TYPE string
+    RAISING
+      zcx_abapgit_ajson_error.
 
-  methods touch_array
-    importing
-      iv_path type string
-      iv_clear type abap_bool default abap_false
-    raising
-      zCX_abapgit_ajson_ERROR.
+  METHODS touch_array
+    IMPORTING
+      iv_path TYPE string
+      iv_clear TYPE abap_bool DEFAULT abap_false
+    RAISING
+      zcx_abapgit_ajson_error.
 
-  methods push
-    importing
-      iv_path type string
-      iv_val type any
-    raising
-      zCX_abapgit_ajson_ERROR.
+  METHODS push
+    IMPORTING
+      iv_path TYPE string
+      iv_val TYPE any
+    RAISING
+      zcx_abapgit_ajson_error.
 
-endinterface.
+ENDINTERFACE.
