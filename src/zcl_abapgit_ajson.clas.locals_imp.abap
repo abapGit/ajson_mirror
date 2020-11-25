@@ -133,9 +133,9 @@ CLASS lcl_json_parser IMPLEMENTATION.
   METHOD parse.
     DATA lx_sxml TYPE REF TO cx_sxml_error.
     TRY.
-      rt_json_tree = _parse( iv_json ).
-    CATCH cx_sxml_error INTO lx_sxml.
-      zcx_abapgit_ajson_error=>raise( `SXML: ` && lx_sxml->get_text( ) ).
+        rt_json_tree = _parse( iv_json ).
+      CATCH cx_sxml_error INTO lx_sxml.
+        zcx_abapgit_ajson_error=>raise( `SXML: ` && lx_sxml->get_text( ) ).
     ENDTRY.
   ENDMETHOD.
 
@@ -519,61 +519,61 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
     FIELD-SYMBOLS <value> TYPE any.
 
     TRY.
-      LOOP AT it_nodes ASSIGNING <n> USING KEY array_index.
-        ref = find_loc(
+        LOOP AT it_nodes ASSIGNING <n> USING KEY array_index.
+          ref = find_loc(
           iv_append_tables = abap_true
           iv_path = <n>-path
           iv_name = <n>-name ).
-        ASSIGN ref->* TO <value>.
-        ASSERT sy-subrc = 0.
-        DESCRIBE FIELD <value> TYPE lv_type.
+          ASSIGN ref->* TO <value>.
+          ASSERT sy-subrc = 0.
+          DESCRIBE FIELD <value> TYPE lv_type.
 
-        CASE <n>-type.
-          WHEN 'null'.
+          CASE <n>-type.
+            WHEN 'null'.
             " Do nothing
-          WHEN 'bool'.
-            <value> = boolc( <n>-value = 'true' ).
-          WHEN 'num'.
-            <value> = <n>-value.
-          WHEN 'str'.
-            IF lv_type = 'D' AND <n>-value IS NOT INITIAL.
-              DATA lv_y TYPE c LENGTH 4.
-              DATA lv_m TYPE c LENGTH 2.
-              DATA lv_d TYPE c LENGTH 2.
+            WHEN 'bool'.
+              <value> = boolc( <n>-value = 'true' ).
+            WHEN 'num'.
+              <value> = <n>-value.
+            WHEN 'str'.
+              IF lv_type = 'D' AND <n>-value IS NOT INITIAL.
+                DATA lv_y TYPE c LENGTH 4.
+                DATA lv_m TYPE c LENGTH 2.
+                DATA lv_d TYPE c LENGTH 2.
 
-              FIND FIRST OCCURRENCE OF REGEX '^(\d{4})-(\d{2})-(\d{2})(T|$)'
+                FIND FIRST OCCURRENCE OF REGEX '^(\d{4})-(\d{2})-(\d{2})(T|$)'
                 IN <n>-value
                 SUBMATCHES lv_y lv_m lv_d.
-              IF sy-subrc <> 0.
-                zcx_abapgit_ajson_error=>raise(
+                IF sy-subrc <> 0.
+                  zcx_abapgit_ajson_error=>raise(
                   iv_msg      = 'Unexpected date format'
                   iv_location = <n>-path && <n>-name ).
+                ENDIF.
+                CONCATENATE lv_y lv_m lv_d INTO <value>.
+              ELSE.
+                <value> = <n>-value.
               ENDIF.
-              CONCATENATE lv_y lv_m lv_d INTO <value>.
-            ELSE.
-              <value> = <n>-value.
-            ENDIF.
-          WHEN 'object'.
-            IF NOT lv_type CO 'uv'.
-              zcx_abapgit_ajson_error=>raise(
+            WHEN 'object'.
+              IF NOT lv_type CO 'uv'.
+                zcx_abapgit_ajson_error=>raise(
                 iv_msg      = 'Expected structure'
                 iv_location = <n>-path && <n>-name ).
-            ENDIF.
-          WHEN 'array'.
-            IF NOT lv_type CO 'h'.
-              zcx_abapgit_ajson_error=>raise(
+              ENDIF.
+            WHEN 'array'.
+              IF NOT lv_type CO 'h'.
+                zcx_abapgit_ajson_error=>raise(
                 iv_msg      = 'Expected table'
                 iv_location = <n>-path && <n>-name ).
-            ENDIF.
-          WHEN OTHERS.
-            zcx_abapgit_ajson_error=>raise(
+              ENDIF.
+            WHEN OTHERS.
+              zcx_abapgit_ajson_error=>raise(
               iv_msg      = |Unexpected JSON type [{ <n>-type }]|
               iv_location = <n>-path && <n>-name ).
-        ENDCASE.
+          ENDCASE.
 
-      ENDLOOP.
-    CATCH cx_sy_conversion_no_number INTO lx.
-      zcx_abapgit_ajson_error=>raise(
+        ENDLOOP.
+      CATCH cx_sy_conversion_no_number INTO lx.
+        zcx_abapgit_ajson_error=>raise(
         iv_msg      = |Source is not a number|
         iv_location = <n>-path && <n>-name ).
     ENDTRY.

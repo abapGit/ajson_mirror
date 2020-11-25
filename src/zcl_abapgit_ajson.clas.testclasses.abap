@@ -514,15 +514,15 @@ CLASS ltcl_utils_test IMPLEMENTATION.
       exp = 123 ).
 
     TRY.
-      lcl_utils=>validate_array_index( iv_path = 'x' iv_index = 'a' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error.
+        lcl_utils=>validate_array_index( iv_path = 'x' iv_index = 'a' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error.
     ENDTRY.
 
     TRY.
-      lcl_utils=>validate_array_index( iv_path = 'x' iv_index = '0' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error.
+        lcl_utils=>validate_array_index( iv_path = 'x' iv_index = '0' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error.
     ENDTRY.
 
   ENDMETHOD.
@@ -999,28 +999,28 @@ CLASS ltcl_reader_test IMPLEMENTATION.
     lo_cut->mt_json_tree = nodes->mt_nodes.
 
     TRY.
-      lo_cut->zif_abapgit_ajson_reader~array_to_string_table( '/x' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->zif_abapgit_ajson_reader~array_to_string_table( '/x' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Path not found: /x' ).
     ENDTRY.
 
     TRY.
-      lo_cut->zif_abapgit_ajson_reader~array_to_string_table( '/' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->zif_abapgit_ajson_reader~array_to_string_table( '/' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Array expected at: /' ).
     ENDTRY.
 
     TRY.
-      lo_cut->zif_abapgit_ajson_reader~array_to_string_table( '/a' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->zif_abapgit_ajson_reader~array_to_string_table( '/a' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Array expected at: /a' ).
     ENDTRY.
@@ -1031,10 +1031,10 @@ CLASS ltcl_reader_test IMPLEMENTATION.
     lo_cut->mt_json_tree = nodes->mt_nodes.
 
     TRY.
-      lo_cut->zif_abapgit_ajson_reader~array_to_string_table( '/' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->zif_abapgit_ajson_reader~array_to_string_table( '/' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Cannot convert [object] to string at [/1]' ).
     ENDTRY.
@@ -1207,10 +1207,10 @@ CLASS ltcl_json_to_abap IMPLEMENTATION.
       exp = 2 ).
 
     TRY.
-      lo_cut->find_loc( '/tab/3/a' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->find_loc( '/tab/3/a' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Index not found in table' ).
     ENDTRY.
@@ -1225,10 +1225,10 @@ CLASS ltcl_json_to_abap IMPLEMENTATION.
       exp = 3 ).
 
     TRY.
-      lo_cut->find_loc( '/tab/5/a' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->find_loc( '/tab/5/a' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Index not found in table' ).
     ENDTRY.
@@ -1247,37 +1247,37 @@ CLASS ltcl_json_to_abap IMPLEMENTATION.
         eo_cut = lo_cut ).
 
     TRY.
-      lo_cut->find_loc( '/xyz' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->find_loc( '/xyz' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Path not found' ).
     ENDTRY.
 
     TRY.
-      lo_cut->find_loc( '/oref/xyz' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->find_loc( '/oref/xyz' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Cannot assign to ref' ).
     ENDTRY.
 
     TRY.
-      lo_cut->find_loc( '/tab/xyz' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->find_loc( '/tab/xyz' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Need index to access tables' ).
     ENDTRY.
 
     TRY.
-      lo_cut->find_loc( '/tab/5' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->find_loc( '/tab/5' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Index not found in table' ).
     ENDTRY.
@@ -1364,53 +1364,53 @@ CLASS ltcl_json_to_abap IMPLEMENTATION.
     DATA nodes TYPE REF TO lcl_nodes_helper.
 
     TRY.
-      CREATE OBJECT nodes.
-      nodes->add( '/    |      |object | ' ).
-      nodes->add( '/    |str   |object | ' ).
+        CREATE OBJECT nodes.
+        nodes->add( '/    |      |object | ' ).
+        nodes->add( '/    |str   |object | ' ).
 
-      lo_cut->to_abap( nodes->sorted( ) ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->to_abap( nodes->sorted( ) ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Expected structure' ).
     ENDTRY.
 
     TRY.
-      CREATE OBJECT nodes.
-      nodes->add( '/    |      |object | ' ).
-      nodes->add( '/    |str   |array  | ' ).
+        CREATE OBJECT nodes.
+        nodes->add( '/    |      |object | ' ).
+        nodes->add( '/    |str   |array  | ' ).
 
-      lo_cut->to_abap( nodes->sorted( ) ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->to_abap( nodes->sorted( ) ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Expected table' ).
     ENDTRY.
 
     TRY.
-      CREATE OBJECT nodes.
-      nodes->add( '/    |      |object |      ' ).
-      nodes->add( '/    |int   |str    |hello ' ).
+        CREATE OBJECT nodes.
+        nodes->add( '/    |      |object |      ' ).
+        nodes->add( '/    |int   |str    |hello ' ).
 
-      lo_cut->to_abap( nodes->sorted( ) ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->to_abap( nodes->sorted( ) ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Source is not a number' ).
     ENDTRY.
 
     TRY.
-      CREATE OBJECT nodes.
-      nodes->add( '/    |      |object |        ' ).
-      nodes->add( '/    |date1 |str    |baddate ' ).
+        CREATE OBJECT nodes.
+        nodes->add( '/    |      |object |        ' ).
+        nodes->add( '/    |date1 |str    |baddate ' ).
 
-      lo_cut->to_abap( nodes->sorted( ) ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        lo_cut->to_abap( nodes->sorted( ) ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Unexpected date format' ).
     ENDTRY.
@@ -1875,69 +1875,69 @@ CLASS ltcl_writer_test IMPLEMENTATION.
     " touch another node
     DATA lx TYPE REF TO zcx_abapgit_ajson_error.
     TRY.
-      li_writer->touch_array( iv_path = '/a/1' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        li_writer->touch_array( iv_path = '/a/1' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Path [/a/1] already used and is not array' ).
     ENDTRY.
 
     " push to not array
     TRY.
-      li_writer->push(
+        li_writer->push(
         iv_path = '/a/1'
         iv_val  = 123 ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Path [/a/1] is not array' ).
     ENDTRY.
 
     " push to not array
     TRY.
-      li_writer->push(
+        li_writer->push(
         iv_path = '/x'
         iv_val  = 123 ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Path [/x] does not exist' ).
     ENDTRY.
 
     " set array item with non-numeric key
     TRY.
-      li_writer->set(
+        li_writer->set(
         iv_path = '/a/abc/x'
         iv_val  = 123 ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Cannot add non-numeric key [abc] to array [/a/]' ).
     ENDTRY.
 
     TRY.
-      li_writer->set(
+        li_writer->set(
         iv_path = '/a/abc'
         iv_val  = 123 ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Cannot add non-numeric key [abc] to array [/a/]' ).
     ENDTRY.
 
     " set array item with zero key
     TRY.
-      li_writer->set(
+        li_writer->set(
         iv_path = '/a/0'
         iv_val  = 123 ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error INTO lx.
-      cl_abap_unit_assert=>assert_equals(
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error INTO lx.
+        cl_abap_unit_assert=>assert_equals(
         act = lx->message
         exp = 'Cannot add zero key to array [/a/]' ).
     ENDTRY.
@@ -2181,37 +2181,37 @@ CLASS ltcl_writer_test IMPLEMENTATION.
     lo_cut->freeze( ).
 
     TRY.
-      li_writer->set(
+        li_writer->set(
         iv_path = '/c'
         iv_val  = 'abc' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error.
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error.
     ENDTRY.
 
     TRY.
-      li_writer->touch_array( iv_path = '/d' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error.
+        li_writer->touch_array( iv_path = '/d' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error.
     ENDTRY.
 
     TRY.
-      li_writer->push(
+        li_writer->push(
         iv_path = '/b'
         iv_val  = 'xyz' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error.
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error.
     ENDTRY.
 
     TRY.
-      li_writer->delete( iv_path = '/a' ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error.
+        li_writer->delete( iv_path = '/a' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error.
     ENDTRY.
 
     TRY.
-      li_writer->clear( ).
-      cl_abap_unit_assert=>fail( ).
-    CATCH zcx_ajson_error.
+        li_writer->clear( ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_ajson_error.
     ENDTRY.
 
   ENDMETHOD.
