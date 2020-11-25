@@ -1,4 +1,4 @@
-class zCX_abapgit_ajson_ERROR definition
+class zcx_abapgit_ajson_error definition
   public
   inheriting from CX_STATIC_CHECK
   final
@@ -51,7 +51,7 @@ ENDCLASS.
 
 
 
-CLASS zCX_abapgit_ajson_ERROR IMPLEMENTATION.
+CLASS zcx_abapgit_ajson_error IMPLEMENTATION.
 
 
 method CONSTRUCTOR.

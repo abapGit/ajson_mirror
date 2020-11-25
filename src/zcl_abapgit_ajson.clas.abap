@@ -113,7 +113,7 @@ ENDCLASS.
 
 
 
-CLASS zCL_abapgit_ajson IMPLEMENTATION.
+CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
 
   METHOD create_empty.
