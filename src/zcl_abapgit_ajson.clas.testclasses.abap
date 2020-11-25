@@ -514,13 +514,15 @@ CLASS ltcl_utils_test IMPLEMENTATION.
       exp = 123 ).
 
     TRY.
-        lcl_utils=>validate_array_index( iv_path = 'x' iv_index = 'a' ).
+        lcl_utils=>validate_array_index( iv_path = 'x'
+                                         iv_index = 'a' ).
         cl_abap_unit_assert=>fail( ).
       CATCH zcx_ajson_error.
     ENDTRY.
 
     TRY.
-        lcl_utils=>validate_array_index( iv_path = 'x' iv_index = '0' ).
+        lcl_utils=>validate_array_index( iv_path = 'x'
+                                         iv_index = '0' ).
         cl_abap_unit_assert=>fail( ).
       CATCH zcx_ajson_error.
     ENDTRY.
@@ -1148,7 +1150,8 @@ CLASS ltcl_json_to_abap IMPLEMENTATION.
       act = <val>
       exp = 'World' ).
 
-    ref = lo_cut->find_loc( iv_path = '/obj' iv_name = 'a' ).
+    ref = lo_cut->find_loc( iv_path = '/obj'
+                            iv_name = 'a' ).
     ASSIGN ref->* TO <val>.
     cl_abap_unit_assert=>assert_equals(
       act = <val>
@@ -1215,7 +1218,8 @@ CLASS ltcl_json_to_abap IMPLEMENTATION.
         exp = 'Index not found in table' ).
     ENDTRY.
 
-    ref = lo_cut->find_loc( iv_path = '/tab/3/a' iv_append_tables = abap_true ).
+    ref = lo_cut->find_loc( iv_path = '/tab/3/a'
+                            iv_append_tables = abap_true ).
     ASSIGN ref->* TO <val>.
     cl_abap_unit_assert=>assert_equals(
       act = <val>

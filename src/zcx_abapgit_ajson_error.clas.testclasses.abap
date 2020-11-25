@@ -18,7 +18,9 @@ class ltcl_error implementation.
     data lx type ref to zcx_abapgit_ajson_error.
     data lv_msg type string.
 
-    lv_msg = repeat( val = 'a' occ = 50 ) && repeat( val = 'b' occ = 50 ) && '123'.
+    lv_msg = repeat( val = 'a'
+                     occ = 50 ) && repeat( val = 'b'
+                                           occ = 50 ) && '123'.
 
     try.
       zcx_abapgit_ajson_error=>raise( lv_msg ).
@@ -36,7 +38,8 @@ class ltcl_error implementation.
     data lx type ref to zcx_abapgit_ajson_error.
 
     try.
-      zcx_abapgit_ajson_error=>raise( iv_msg = 'a' iv_location = 'b' ).
+      zcx_abapgit_ajson_error=>raise( iv_msg = 'a'
+                                      iv_location = 'b' ).
       cl_abap_unit_assert=>fail( ).
     catch zcx_ajson_error into lx.
       cl_abap_unit_assert=>assert_equals(
