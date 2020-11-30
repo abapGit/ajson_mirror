@@ -67,4 +67,12 @@ INTERFACE zif_abapgit_ajson_writer
     RAISING
       zcx_abapgit_ajson_error.
 
+  METHODS set_with_type
+    IMPORTING
+      iv_path TYPE string
+      iv_val TYPE any
+      iv_type TYPE string
+    RAISING
+      zcx_abapgit_ajson_error.
+
 ENDINTERFACE.

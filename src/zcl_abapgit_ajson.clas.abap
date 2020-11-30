@@ -31,6 +31,7 @@ CLASS zcl_abapgit_ajson DEFINITION
       set_integer FOR zif_abapgit_ajson_writer~set_integer,
       set_date FOR zif_abapgit_ajson_writer~set_date,
       set_null FOR zif_abapgit_ajson_writer~set_null,
+      set_with_type FOR zif_abapgit_ajson_writer~set_with_type,
       delete FOR zif_abapgit_ajson_writer~delete,
       touch_array FOR zif_abapgit_ajson_writer~touch_array,
       push FOR zif_abapgit_ajson_writer~push.
@@ -201,8 +202,8 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
   METHOD prove_path_exists.
 
     DATA lt_path TYPE string_table.
-    DATA node_ref LIKE LINE OF rt_node_stack.
-    DATA node_parent LIKE LINE OF rt_node_stack.
+    DATA lr_node LIKE LINE OF rt_node_stack.
+    DATA lr_node_parent LIKE LINE OF rt_node_stack.
     DATA lv_cur_path TYPE string.
     DATA lv_cur_name TYPE string.
     DATA ls_new_node LIKE LINE OF mt_json_tree.
@@ -211,16 +212,16 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     DELETE lt_path WHERE table_line IS INITIAL.
 
     DO.
-      node_parent = node_ref.
-      READ TABLE mt_json_tree REFERENCE INTO node_ref
+      lr_node_parent = lr_node.
+      READ TABLE mt_json_tree REFERENCE INTO lr_node
         WITH KEY
           path = lv_cur_path
           name = lv_cur_name.
       IF sy-subrc <> 0. " New node, assume it is always object as it has a named child, use touch_array to init array
         CLEAR ls_new_node.
-        IF node_parent IS NOT INITIAL. " if has parent
-          node_parent->children = node_parent->children + 1.
-          IF node_parent->type = 'array'.
+        IF lr_node_parent IS NOT INITIAL. " if has parent
+          lr_node_parent->children = lr_node_parent->children + 1.
+          IF lr_node_parent->type = 'array'.
             ls_new_node-index = lcl_utils=>validate_array_index(
               iv_path  = lv_cur_path
               iv_index = lv_cur_name ).
@@ -229,9 +230,9 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
         ls_new_node-path = lv_cur_path.
         ls_new_node-name = lv_cur_name.
         ls_new_node-type = 'object'.
-        INSERT ls_new_node INTO TABLE mt_json_tree REFERENCE INTO node_ref.
+        INSERT ls_new_node INTO TABLE mt_json_tree REFERENCE INTO lr_node.
       ENDIF.
-      INSERT node_ref INTO rt_node_stack INDEX 1.
+      INSERT lr_node INTO rt_node_stack INDEX 1.
       lv_cur_path = lv_cur_path && lv_cur_name && '/'.
       READ TABLE lt_path INDEX sy-index INTO lv_cur_name.
       IF sy-subrc <> 0.
@@ -284,7 +285,8 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
           ENDIF.
           APPEND lv_tmp TO rt_string_table.
         WHEN OTHERS.
-          zcx_abapgit_ajson_error=>raise( |Cannot convert [{ <item>-type }] to string at [{ <item>-path }{ <item>-name }]| ).
+          zcx_abapgit_ajson_error=>raise( |Cannot convert [{ <item>-type
+            }] to string at [{ <item>-path }{ <item>-name }]| ).
       ENDCASE.
     ENDLOOP.
 
@@ -480,20 +482,20 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
   METHOD zif_abapgit_ajson_writer~push.
 
-    DATA parent_ref TYPE REF TO ty_node.
-    DATA new_node_ref TYPE REF TO ty_node.
+    DATA lr_parent TYPE REF TO ty_node.
+    DATA lr_new_node TYPE REF TO ty_node.
 
     IF mv_read_only = abap_true.
       zcx_abapgit_ajson_error=>raise( 'This json instance is read only' ).
     ENDIF.
 
-    parent_ref = get_item( iv_path ).
+    lr_parent = get_item( iv_path ).
 
-    IF parent_ref IS INITIAL.
+    IF lr_parent IS INITIAL.
       zcx_abapgit_ajson_error=>raise( |Path [{ iv_path }] does not exist| ).
     ENDIF.
 
-    IF parent_ref->type <> 'array'.
+    IF lr_parent->type <> 'array'.
       zcx_abapgit_ajson_error=>raise( |Path [{ iv_path }] is not array| ).
     ENDIF.
 
@@ -501,17 +503,17 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     DATA ls_new_path TYPE ty_path_name.
 
     ls_new_path-path = lcl_utils=>normalize_path( iv_path ).
-    ls_new_path-name = |{ parent_ref->children + 1 }|.
+    ls_new_path-name = |{ lr_parent->children + 1 }|.
 
     lt_new_nodes = lcl_abap_to_json=>convert(
       iv_data   = iv_val
       is_prefix = ls_new_path ).
-    READ TABLE lt_new_nodes INDEX 1 REFERENCE INTO new_node_ref. " assume first record is the array item - not ideal !
+    READ TABLE lt_new_nodes INDEX 1 REFERENCE INTO lr_new_node. " assume first record is the array item - not ideal !
     ASSERT sy-subrc = 0.
-    new_node_ref->index = parent_ref->children + 1.
+    lr_new_node->index = lr_parent->children + 1.
 
     " update data
-    parent_ref->children = parent_ref->children + 1.
+    lr_parent->children = lr_parent->children + 1.
     INSERT LINES OF lt_new_nodes INTO TABLE mt_json_tree.
 
   ENDMETHOD.
@@ -521,7 +523,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
     DATA lt_path TYPE string_table.
     DATA ls_split_path TYPE ty_path_name.
-    DATA parent_ref TYPE REF TO ty_node.
+    DATA lr_parent TYPE REF TO ty_node.
     DATA lt_node_stack TYPE TABLE OF REF TO ty_node.
     FIELD-SYMBOLS <topnode> TYPE ty_node.
 
@@ -543,7 +545,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
     " Ensure whole path exists
     lt_node_stack = prove_path_exists( ls_split_path-path ).
-    READ TABLE lt_node_stack INDEX 1 INTO parent_ref.
+    READ TABLE lt_node_stack INDEX 1 INTO lr_parent.
     ASSERT sy-subrc = 0.
 
     " delete if exists with subtree
@@ -555,7 +557,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     DATA lt_new_nodes TYPE ty_nodes_tt.
     DATA lv_array_index TYPE i.
 
-    IF parent_ref->type = 'array'.
+    IF lr_parent->type = 'array'.
       lv_array_index = lcl_utils=>validate_array_index(
         iv_path  = ls_split_path-path
         iv_index = ls_split_path-name ).
@@ -567,7 +569,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
       is_prefix      = ls_split_path ).
 
     " update data
-    parent_ref->children = parent_ref->children + 1.
+    lr_parent->children = lr_parent->children + 1.
     INSERT LINES OF lt_new_nodes INTO TABLE mt_json_tree.
 
   ENDMETHOD.
@@ -634,9 +636,67 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD zif_abapgit_ajson_writer~set_with_type.
+
+    DATA lt_path TYPE string_table.
+    DATA ls_split_path TYPE ty_path_name.
+    DATA lr_parent TYPE REF TO ty_node.
+    DATA lt_node_stack TYPE TABLE OF REF TO ty_node.
+    FIELD-SYMBOLS <topnode> TYPE ty_node.
+
+    IF mv_read_only = abap_true.
+      zcx_abapgit_ajson_error=>raise( 'This json instance is read only' ).
+    ENDIF.
+
+    IF iv_type <> 'bool' AND iv_type <> 'null' AND iv_type <> 'num' AND iv_type <> 'str'.
+      zcx_abapgit_ajson_error=>raise( |Unexpected type { iv_type }| ).
+    ENDIF.
+
+    ls_split_path = lcl_utils=>split_path( iv_path ).
+    IF ls_split_path IS INITIAL. " Assign root, exceptional processing
+      mt_json_tree = lcl_abap_to_json=>insert_with_type(
+        iv_data   = iv_val
+        iv_type   = iv_type
+        is_prefix = ls_split_path ).
+      RETURN.
+    ENDIF.
+
+    " Ensure whole path exists
+    lt_node_stack = prove_path_exists( ls_split_path-path ).
+    READ TABLE lt_node_stack INDEX 1 INTO lr_parent.
+    ASSERT sy-subrc = 0.
+
+    " delete if exists with subtree
+    delete_subtree(
+      iv_path = ls_split_path-path
+      iv_name = ls_split_path-name ).
+
+    " convert to json
+    DATA lt_new_nodes TYPE ty_nodes_tt.
+    DATA lv_array_index TYPE i.
+
+    IF lr_parent->type = 'array'.
+      lv_array_index = lcl_utils=>validate_array_index(
+        iv_path  = ls_split_path-path
+        iv_index = ls_split_path-name ).
+    ENDIF.
+
+    lt_new_nodes = lcl_abap_to_json=>insert_with_type(
+      iv_data        = iv_val
+      iv_type        = iv_type
+      iv_array_index = lv_array_index
+      is_prefix      = ls_split_path ).
+
+    " update data
+    lr_parent->children = lr_parent->children + 1.
+    INSERT LINES OF lt_new_nodes INTO TABLE mt_json_tree.
+
+  ENDMETHOD.
+
+
   METHOD zif_abapgit_ajson_writer~touch_array.
 
-    DATA node_ref TYPE REF TO ty_node.
+    DATA lr_node TYPE REF TO ty_node.
     DATA ls_new_node LIKE LINE OF mt_json_tree.
     DATA ls_split_path TYPE ty_path_name.
 
@@ -658,25 +718,25 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
         iv_path = ls_split_path-path
         iv_name = ls_split_path-name ).
     ELSE.
-      node_ref = get_item( iv_path ).
+      lr_node = get_item( iv_path ).
     ENDIF.
 
-    IF node_ref IS INITIAL. " Or node was cleared
+    IF lr_node IS INITIAL. " Or node was cleared
 
-      DATA parent_ref TYPE REF TO ty_node.
+      DATA lr_parent TYPE REF TO ty_node.
       DATA lt_node_stack TYPE TABLE OF REF TO ty_node.
 
       lt_node_stack = prove_path_exists( ls_split_path-path ).
-      READ TABLE lt_node_stack INDEX 1 INTO parent_ref.
+      READ TABLE lt_node_stack INDEX 1 INTO lr_parent.
       ASSERT sy-subrc = 0.
-      parent_ref->children = parent_ref->children + 1.
+      lr_parent->children = lr_parent->children + 1.
 
       ls_new_node-path = ls_split_path-path.
       ls_new_node-name = ls_split_path-name.
       ls_new_node-type = 'array'.
       INSERT ls_new_node INTO TABLE mt_json_tree.
 
-    ELSEIF node_ref->type <> 'array'.
+    ELSEIF lr_node->type <> 'array'.
       zcx_abapgit_ajson_error=>raise( |Path [{ iv_path }] already used and is not array| ).
     ENDIF.
 
