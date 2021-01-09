@@ -4,11 +4,21 @@ CLASS zcl_abapgit_ajson DEFINITION
 
   PUBLIC SECTION.
 
-    CONSTANTS version TYPE string VALUE 'v1.0.1'.
+    CONSTANTS version TYPE string VALUE 'v1.0.3'.
     CONSTANTS origin TYPE string VALUE 'https://github.com/sbcgua/ajson'.
 
     INTERFACES zif_abapgit_ajson_reader .
     INTERFACES zif_abapgit_ajson_writer .
+
+    CONSTANTS:
+      BEGIN OF node_type,
+        boolean TYPE string VALUE 'bool',
+        string  TYPE string VALUE 'str',
+        number  TYPE string VALUE 'num',
+        null    TYPE string VALUE 'null',
+        array   TYPE string VALUE 'array',
+        object  TYPE string VALUE 'object',
+      END OF node_type.
 
     ALIASES:
       exists FOR zif_abapgit_ajson_reader~exists,
@@ -33,7 +43,8 @@ CLASS zcl_abapgit_ajson DEFINITION
       set_null FOR zif_abapgit_ajson_writer~set_null,
       delete FOR zif_abapgit_ajson_writer~delete,
       touch_array FOR zif_abapgit_ajson_writer~touch_array,
-      push FOR zif_abapgit_ajson_writer~push.
+      push FOR zif_abapgit_ajson_writer~push,
+      stringify FOR zif_abapgit_ajson_writer~stringify.
 
     TYPES:
       BEGIN OF ty_node,
@@ -68,14 +79,6 @@ CLASS zcl_abapgit_ajson DEFINITION
     CLASS-METHODS create_empty
       RETURNING
         VALUE(ro_instance) TYPE REF TO zcl_abapgit_ajson.
-
-    METHODS stringify
-      IMPORTING
-        iv_indent TYPE i DEFAULT 0
-      RETURNING
-        VALUE(rv_json) TYPE string
-      RAISING
-        zcx_abapgit_ajson_error.
 
     METHODS freeze.
 
@@ -220,7 +223,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
         CLEAR ls_new_node.
         IF lr_node_parent IS NOT INITIAL. " if has parent
           lr_node_parent->children = lr_node_parent->children + 1.
-          IF lr_node_parent->type = 'array'.
+          IF lr_node_parent->type = node_type-array.
             ls_new_node-index = lcl_utils=>validate_array_index(
               iv_path  = lv_cur_path
               iv_index = lv_cur_name ).
@@ -228,7 +231,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
         ENDIF.
         ls_new_node-path = lv_cur_path.
         ls_new_node-name = lv_cur_name.
-        ls_new_node-type = 'object'.
+        ls_new_node-type = node_type-object.
         INSERT ls_new_node INTO TABLE mt_json_tree REFERENCE INTO lr_node.
       ENDIF.
       INSERT lr_node INTO rt_node_stack INDEX 1.
@@ -265,17 +268,17 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     IF lr_node IS INITIAL.
       zcx_abapgit_ajson_error=>raise( |Path not found: { iv_path }| ).
     ENDIF.
-    IF lr_node->type <> 'array'.
+    IF lr_node->type <> node_type-array.
       zcx_abapgit_ajson_error=>raise( |Array expected at: { iv_path }| ).
     ENDIF.
 
     LOOP AT mt_json_tree ASSIGNING <item> WHERE path = lv_normalized_path.
       CASE <item>-type.
-        WHEN 'num' OR 'str'.
+        WHEN node_type-number OR node_type-string.
           APPEND <item>-value TO rt_string_table.
-        WHEN 'null'.
+        WHEN node_type-null.
           APPEND '' TO rt_string_table.
-        WHEN 'bool'.
+        WHEN node_type-boolean.
           DATA lv_tmp TYPE string.
           IF <item>-value = 'true'.
             lv_tmp = abap_true.
@@ -318,9 +321,9 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
     DATA lv_item TYPE REF TO ty_node.
     lv_item = get_item( iv_path ).
-    IF lv_item IS INITIAL OR lv_item->type = 'null'.
+    IF lv_item IS INITIAL OR lv_item->type = node_type-null.
       RETURN.
-    ELSEIF lv_item->type = 'bool'.
+    ELSEIF lv_item->type = node_type-boolean.
       rv_value = boolc( lv_item->value = 'true' ).
     ELSEIF lv_item->value IS NOT INITIAL.
       rv_value = abap_true.
@@ -338,7 +341,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
     lv_item = get_item( iv_path ).
 
-    IF lv_item IS NOT INITIAL AND lv_item->type = 'str'.
+    IF lv_item IS NOT INITIAL AND lv_item->type = node_type-string.
       FIND FIRST OCCURRENCE OF REGEX '^(\d{4})-(\d{2})-(\d{2})(T|$)'
         IN lv_item->value
         SUBMATCHES lv_y lv_m lv_d.
@@ -352,7 +355,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
     DATA lv_item TYPE REF TO ty_node.
     lv_item = get_item( iv_path ).
-    IF lv_item IS NOT INITIAL AND lv_item->type = 'num'.
+    IF lv_item IS NOT INITIAL AND lv_item->type = node_type-number.
       rv_value = lv_item->value.
     ENDIF.
 
@@ -374,7 +377,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
     DATA lv_item TYPE REF TO ty_node.
     lv_item = get_item( iv_path ).
-    IF lv_item IS NOT INITIAL AND lv_item->type = 'num'.
+    IF lv_item IS NOT INITIAL AND lv_item->type = node_type-number.
       rv_value = lv_item->value.
     ENDIF.
 
@@ -385,7 +388,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
     DATA lv_item TYPE REF TO ty_node.
     lv_item = get_item( iv_path ).
-    IF lv_item IS NOT INITIAL AND lv_item->type <> 'null'.
+    IF lv_item IS NOT INITIAL AND lv_item->type <> node_type-null.
       rv_value = lv_item->value.
     ENDIF.
 
@@ -494,7 +497,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
       zcx_abapgit_ajson_error=>raise( |Path [{ iv_path }] does not exist| ).
     ENDIF.
 
-    IF lr_parent->type <> 'array'.
+    IF lr_parent->type <> node_type-array.
       zcx_abapgit_ajson_error=>raise( |Path [{ iv_path }] is not array| ).
     ENDIF.
 
@@ -535,7 +538,8 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     ENDIF.
 
     IF iv_node_type IS NOT INITIAL
-      AND iv_node_type <> 'bool' AND iv_node_type <> 'null' AND iv_node_type <> 'num' AND iv_node_type <> 'str'.
+      AND iv_node_type <> node_type-boolean AND iv_node_type <> node_type-null
+      AND iv_node_type <> node_type-number AND iv_node_type <> node_type-string.
       zcx_abapgit_ajson_error=>raise( |Unexpected type { iv_node_type }| ).
     ENDIF.
 
@@ -568,7 +572,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     DATA lt_new_nodes TYPE ty_nodes_tt.
     DATA lv_array_index TYPE i.
 
-    IF lr_parent->type = 'array'.
+    IF lr_parent->type = node_type-array.
       lv_array_index = lcl_utils=>validate_array_index(
         iv_path  = ls_split_path-path
         iv_index = ls_split_path-name ).
@@ -694,10 +698,10 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
       ls_new_node-path = ls_split_path-path.
       ls_new_node-name = ls_split_path-name.
-      ls_new_node-type = 'array'.
+      ls_new_node-type = node_type-array.
       INSERT ls_new_node INTO TABLE mt_json_tree.
 
-    ELSEIF lr_node->type <> 'array'.
+    ELSEIF lr_node->type <> node_type-array.
       zcx_abapgit_ajson_error=>raise( |Path [{ iv_path }] already used and is not array| ).
     ENDIF.
 
