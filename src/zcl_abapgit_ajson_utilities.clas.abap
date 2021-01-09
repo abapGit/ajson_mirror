@@ -8,18 +8,18 @@ CLASS zcl_abapgit_ajson_utilities DEFINITION
       IMPORTING
         !iv_json_a TYPE string OPTIONAL
         !iv_json_b TYPE string OPTIONAL
-        !io_json_a TYPE REF TO zcl_abapgit_ajson OPTIONAL
-        !io_json_b TYPE REF TO zcl_abapgit_ajson OPTIONAL
+        !io_json_a TYPE REF TO zif_abapgit_ajson OPTIONAL
+        !io_json_b TYPE REF TO zif_abapgit_ajson OPTIONAL
       EXPORTING
-        !eo_insert TYPE REF TO zcl_abapgit_ajson
-        !eo_delete TYPE REF TO zcl_abapgit_ajson
-        !eo_change TYPE REF TO zcl_abapgit_ajson
+        !eo_insert TYPE REF TO zif_abapgit_ajson
+        !eo_delete TYPE REF TO zif_abapgit_ajson
+        !eo_change TYPE REF TO zif_abapgit_ajson
       RAISING
         zcx_abapgit_ajson_error .
     METHODS sort
       IMPORTING
         !iv_json         TYPE string OPTIONAL
-        !io_json         TYPE REF TO zcl_abapgit_ajson OPTIONAL
+        !io_json         TYPE REF TO zif_abapgit_ajson OPTIONAL
       RETURNING
         VALUE(rv_sorted) TYPE string
       RAISING
@@ -28,8 +28,8 @@ CLASS zcl_abapgit_ajson_utilities DEFINITION
 
   PRIVATE SECTION.
 
-    DATA mo_json_a TYPE REF TO zcl_abapgit_ajson .
-    DATA mo_json_b TYPE REF TO zcl_abapgit_ajson .
+    DATA mo_json_a TYPE REF TO zif_abapgit_ajson .
+    DATA mo_json_b TYPE REF TO zif_abapgit_ajson .
     DATA mo_insert TYPE REF TO zif_abapgit_ajson_writer .
     DATA mo_delete TYPE REF TO zif_abapgit_ajson_writer .
     DATA mo_change TYPE REF TO zif_abapgit_ajson_writer .
@@ -46,7 +46,7 @@ CLASS zcl_abapgit_ajson_utilities DEFINITION
         zcx_abapgit_ajson_error .
     METHODS delete_empty_nodes
       IMPORTING
-        !io_json TYPE REF TO zcl_abapgit_ajson
+        !io_json TYPE REF TO zif_abapgit_ajson
       RAISING
         zcx_abapgit_ajson_error .
 ENDCLASS.
@@ -58,7 +58,7 @@ CLASS zcl_abapgit_ajson_utilities IMPLEMENTATION.
 
   METHOD delete_empty_nodes.
 
-    DATA ls_json_tree TYPE zcl_abapgit_ajson=>ty_node.
+    DATA ls_json_tree LIKE LINE OF io_json->mt_json_tree.
     DATA lv_subrc TYPE sy-subrc.
 
     DO.
@@ -134,8 +134,8 @@ CLASS zcl_abapgit_ajson_utilities IMPLEMENTATION.
       lv_path_b TYPE string.
 
     FIELD-SYMBOLS:
-      <node_a> TYPE zcl_abapgit_ajson=>ty_node,
-      <node_b> TYPE zcl_abapgit_ajson=>ty_node.
+      <node_a> LIKE LINE OF mo_json_a->mt_json_tree,
+      <node_b> LIKE LINE OF mo_json_a->mt_json_tree.
 
     LOOP AT mo_json_a->mt_json_tree ASSIGNING <node_a> WHERE path = iv_path.
       lv_path_a = <node_a>-path && <node_a>-name && '/'.
@@ -215,8 +215,8 @@ CLASS zcl_abapgit_ajson_utilities IMPLEMENTATION.
     DATA lv_path TYPE string.
 
     FIELD-SYMBOLS:
-      <node_a> TYPE zcl_abapgit_ajson=>ty_node,
-      <node_b> TYPE zcl_abapgit_ajson=>ty_node.
+      <node_a> LIKE LINE OF mo_json_b->mt_json_tree,
+      <node_b> LIKE LINE OF mo_json_b->mt_json_tree.
 
     LOOP AT mo_json_b->mt_json_tree ASSIGNING <node_b> WHERE path = iv_path.
       lv_path = <node_b>-path && <node_b>-name && '/'.
@@ -245,7 +245,7 @@ CLASS zcl_abapgit_ajson_utilities IMPLEMENTATION.
 
   METHOD sort.
 
-    DATA lo_json TYPE REF TO zcl_abapgit_ajson.
+    DATA lo_json TYPE REF TO zif_abapgit_ajson.
 
     IF boolc( iv_json IS SUPPLIED ) = boolc( io_json IS SUPPLIED ).
       zcx_abapgit_ajson_error=>raise( 'Either supply JSON string or instance, but not both' ).

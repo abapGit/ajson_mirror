@@ -5,14 +5,14 @@
 CLASS lcl_nodes_helper DEFINITION FINAL.
   PUBLIC SECTION.
 
-    DATA mt_nodes TYPE zcl_abapgit_ajson=>ty_nodes_tt READ-ONLY.
+    DATA mt_nodes TYPE zif_abapgit_ajson=>ty_nodes_tt READ-ONLY.
 
     METHODS add
       IMPORTING
         iv_str TYPE string.
     METHODS sorted
       RETURNING
-        VALUE(rt_nodes) TYPE zcl_abapgit_ajson=>ty_nodes_ts.
+        VALUE(rt_nodes) TYPE zif_abapgit_ajson=>ty_nodes_ts.
 
 ENDCLASS.
 
@@ -139,9 +139,9 @@ CLASS ltcl_json_utils IMPLEMENTATION.
     DATA:
       lv_json       TYPE string,
       lo_util       TYPE REF TO zcl_abapgit_ajson_utilities,
-      lo_insert     TYPE REF TO zcl_abapgit_ajson,
-      lo_delete     TYPE REF TO zcl_abapgit_ajson,
-      lo_change     TYPE REF TO zcl_abapgit_ajson,
+      lo_insert     TYPE REF TO zif_abapgit_ajson,
+      lo_delete     TYPE REF TO zif_abapgit_ajson,
+      lo_change     TYPE REF TO zif_abapgit_ajson,
       lo_insert_exp TYPE REF TO lcl_nodes_helper,
       lo_delete_exp TYPE REF TO lcl_nodes_helper,
       lo_change_exp TYPE REF TO lcl_nodes_helper.
@@ -246,9 +246,9 @@ CLASS ltcl_json_utils IMPLEMENTATION.
       lv_json_a     TYPE string,
       lv_json_b     TYPE string,
       lo_util       TYPE REF TO zcl_abapgit_ajson_utilities,
-      lo_insert     TYPE REF TO zcl_abapgit_ajson,
-      lo_delete     TYPE REF TO zcl_abapgit_ajson,
-      lo_change     TYPE REF TO zcl_abapgit_ajson,
+      lo_insert     TYPE REF TO zif_abapgit_ajson,
+      lo_delete     TYPE REF TO zif_abapgit_ajson,
+      lo_change     TYPE REF TO zif_abapgit_ajson,
       lo_insert_exp TYPE REF TO lcl_nodes_helper,
       lo_delete_exp TYPE REF TO lcl_nodes_helper.
 
