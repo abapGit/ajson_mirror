@@ -354,15 +354,15 @@ CLASS lcl_json_serializer IMPLEMENTATION.
     ENDIF.
 
     CASE is_node-type.
-      WHEN 'array'.
+      WHEN zcl_abapgit_ajson=>node_type-array.
         lv_item = lv_item && '['.
-      WHEN 'object'.
+      WHEN zcl_abapgit_ajson=>node_type-object.
         lv_item = lv_item && '{'.
-      WHEN 'str'.
+      WHEN zcl_abapgit_ajson=>node_type-string.
         lv_item = lv_item && |"{ escape( is_node-value ) }"|.
-      WHEN 'bool' OR 'num'.
+      WHEN zcl_abapgit_ajson=>node_type-boolean OR zcl_abapgit_ajson=>node_type-number.
         lv_item = lv_item && is_node-value.
-      WHEN 'null'.
+      WHEN zcl_abapgit_ajson=>node_type-null.
         lv_item = lv_item && 'null'.
       WHEN OTHERS.
         zcx_abapgit_ajson_error=>raise(
@@ -370,7 +370,9 @@ CLASS lcl_json_serializer IMPLEMENTATION.
           iv_location = is_node-path && is_node-name ).
     ENDCASE.
 
-    IF mv_indent_step > 0 AND ( is_node-type = 'array' OR is_node-type = 'object' ) AND is_node-children > 0.
+    IF mv_indent_step > 0
+      AND ( is_node-type = zcl_abapgit_ajson=>node_type-array OR is_node-type = zcl_abapgit_ajson=>node_type-object )
+      AND is_node-children > 0.
       mv_level = mv_level + 1.
       lv_item = lv_item && cl_abap_char_utilities=>newline.
     ENDIF.
@@ -379,21 +381,21 @@ CLASS lcl_json_serializer IMPLEMENTATION.
 
     " finish complex item
 
-    IF is_node-type = 'array' OR is_node-type = 'object'.
+    IF is_node-type = zcl_abapgit_ajson=>node_type-array OR is_node-type = zcl_abapgit_ajson=>node_type-object.
       DATA lv_children_path TYPE string.
       DATA lv_tail TYPE string.
 
       lv_children_path = is_node-path && is_node-name && '/'. " for root: path = '' and name = '', so result is '/'
 
       CASE is_node-type.
-        WHEN 'array'.
+        WHEN zcl_abapgit_ajson=>node_type-array.
           IF is_node-children > 0.
             stringify_set(
               iv_parent_path = lv_children_path
               iv_array       = abap_true ).
           ENDIF.
           lv_tail = ']'.
-        WHEN 'object'.
+        WHEN zcl_abapgit_ajson=>node_type-object.
           IF is_node-children > 0.
             stringify_set(
               iv_parent_path = lv_children_path
@@ -537,13 +539,13 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
           DESCRIBE FIELD <value> TYPE lv_type.
 
           CASE <n>-type.
-            WHEN 'null'.
+            WHEN zcl_abapgit_ajson=>node_type-null.
             " Do nothing
-            WHEN 'bool'.
+            WHEN zcl_abapgit_ajson=>node_type-boolean.
               <value> = boolc( <n>-value = 'true' ).
-            WHEN 'num'.
+            WHEN zcl_abapgit_ajson=>node_type-number.
               <value> = <n>-value.
-            WHEN 'str'.
+            WHEN zcl_abapgit_ajson=>node_type-string.
               IF lv_type = 'D' AND <n>-value IS NOT INITIAL.
                 DATA lv_y TYPE c LENGTH 4.
                 DATA lv_m TYPE c LENGTH 2.
@@ -561,13 +563,13 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
               ELSE.
                 <value> = <n>-value.
               ENDIF.
-            WHEN 'object'.
+            WHEN zcl_abapgit_ajson=>node_type-object.
               IF NOT lv_type CO 'uv'.
                 zcx_abapgit_ajson_error=>raise(
                 iv_msg      = 'Expected structure'
                 iv_location = <n>-path && <n>-name ).
               ENDIF.
-            WHEN 'array'.
+            WHEN zcl_abapgit_ajson=>node_type-array.
               IF NOT lv_type CO 'h'.
                 zcx_abapgit_ajson_error=>raise(
                 iv_msg      = 'Expected table'
@@ -897,17 +899,17 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
     <n>-index = iv_index.
 
     IF io_type->absolute_name = '\TYPE-POOL=ABAP\TYPE=ABAP_BOOL' OR io_type->absolute_name = '\TYPE=XFELD'.
-      <n>-type = 'bool'.
+      <n>-type = zcl_abapgit_ajson=>node_type-boolean.
       IF iv_data IS NOT INITIAL.
         <n>-value = 'true'.
       ELSE.
         <n>-value = 'false'.
       ENDIF.
     ELSEIF io_type->type_kind CO 'CNgXyDT'. " Char like, date/time, xstring
-      <n>-type = 'str'.
+      <n>-type = zcl_abapgit_ajson=>node_type-string.
       <n>-value = |{ iv_data }|.
     ELSEIF io_type->type_kind CO 'bsI8PaeF'. " Numeric
-      <n>-type = 'num'.
+      <n>-type = zcl_abapgit_ajson=>node_type-number.
       <n>-value = |{ iv_data }|.
     ELSE.
       zcx_abapgit_ajson_error=>raise( |Unexpected elemetary type [{
@@ -927,7 +929,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
     <n>-index = iv_index.
 
     IF iv_data IS INITIAL.
-      <n>-type  = 'null'.
+      <n>-type  = zcl_abapgit_ajson=>node_type-null.
       <n>-value = 'null'.
     ELSE.
       " TODO support data references
@@ -959,7 +961,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
       APPEND INITIAL LINE TO ct_nodes ASSIGNING <root>.
       <root>-path  = is_prefix-path.
       <root>-name  = is_prefix-name.
-      <root>-type  = 'object'.
+      <root>-type  = zcl_abapgit_ajson=>node_type-object.
       <root>-index = iv_index.
     ENDIF.
 
@@ -1015,7 +1017,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
     APPEND INITIAL LINE TO ct_nodes ASSIGNING <root>.
     <root>-path  = is_prefix-path.
     <root>-name  = is_prefix-name.
-    <root>-type  = 'array'.
+    <root>-type  = zcl_abapgit_ajson=>node_type-array.
     <root>-index = iv_index.
 
     ls_next_prefix-path = is_prefix-path && is_prefix-name && '/'.
@@ -1066,17 +1068,18 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
 
     lv_prefix = is_prefix-path && is_prefix-name.
     IF io_type->type_kind CO 'CNgXyDT'. " Char like, date/time, xstring
-      IF iv_type = 'bool' AND iv_data <> 'true' AND iv_data <> 'false'.
+      IF iv_type = zcl_abapgit_ajson=>node_type-boolean AND iv_data <> 'true' AND iv_data <> 'false'.
         zcx_abapgit_ajson_error=>raise( |Unexpected boolean value [{ iv_data }] @{ lv_prefix }| ).
-      ELSEIF iv_type = 'null' AND iv_data IS NOT INITIAL.
+      ELSEIF iv_type = zcl_abapgit_ajson=>node_type-null AND iv_data IS NOT INITIAL.
         zcx_abapgit_ajson_error=>raise( |Unexpected null value [{ iv_data }] @{ lv_prefix }| ).
-      ELSEIF iv_type = 'num' AND iv_data CN '0123456789. E+-'.
+      ELSEIF iv_type = zcl_abapgit_ajson=>node_type-number AND iv_data CN '0123456789. E+-'.
         zcx_abapgit_ajson_error=>raise( |Unexpected numeric value [{ iv_data }] @{ lv_prefix }| ).
-      ELSEIF iv_type <> 'str' AND iv_type <> 'bool' AND iv_type <> 'null' AND iv_type <> 'num'.
+      ELSEIF iv_type <> zcl_abapgit_ajson=>node_type-string AND iv_type <> zcl_abapgit_ajson=>node_type-boolean
+        AND iv_type <> zcl_abapgit_ajson=>node_type-null AND iv_type <> zcl_abapgit_ajson=>node_type-number.
         zcx_abapgit_ajson_error=>raise( |Unexpected type for value [{ iv_type },{ iv_data }] @{ lv_prefix }| ).
       ENDIF.
     ELSEIF io_type->type_kind CO 'bsI8PaeF'. " Numeric
-      IF iv_type <> 'num'.
+      IF iv_type <> zcl_abapgit_ajson=>node_type-number.
         zcx_abapgit_ajson_error=>raise( |Unexpected value for numeric [{ iv_data }] @{ lv_prefix }| ).
       ENDIF.
     ELSE.
