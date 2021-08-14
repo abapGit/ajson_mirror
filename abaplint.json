@@ -57,7 +57,12 @@
     "exit_or_check": false,
     "exporting": true,
     "forbidden_identifier": false,
-    "forbidden_pseudo_and_pragma": false,
+    "forbidden_pseudo_and_pragma": {
+      "ignoreGlobalClassDefinition": true,
+      "ignoreGlobalInterface": true,
+      "pragmas": ["##NO_TEXT"],
+      "pseudo": ["#EC NOTEXT"]
+    },
     "forbidden_void_type": {
       "exclude": [],
       "severity": "Error",
@@ -116,6 +121,13 @@
       "refresh": true,
       "compute": true,
       "add": true,
+      "parameter": true,
+      "communication": true,
+      "exitFromSQL": true,
+      "freeMemory": true,
+      "pack": true,
+      "ranges": true,
+      "selectWithoutInto": true,
       "subtract": true,
       "multiply": true,
       "move": true,
