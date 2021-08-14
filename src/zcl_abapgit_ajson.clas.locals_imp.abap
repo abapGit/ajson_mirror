@@ -571,7 +571,7 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
                 DATA lv_m TYPE c LENGTH 2.
                 DATA lv_d TYPE c LENGTH 2.
 
-                FIND FIRST OCCURRENCE OF REGEX '^(\d{4})-(\d{2})-(\d{2})(T|$)' "#EC NOTEXT
+                FIND FIRST OCCURRENCE OF REGEX '^(\d{4})-(\d{2})-(\d{2})(T|$)'
                 IN <n>-value
                 SUBMATCHES lv_y lv_m lv_d.
                 IF sy-subrc <> 0.
@@ -702,9 +702,9 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
 
     CONSTANTS lc_utc TYPE c LENGTH 6 VALUE 'UTC'.
     CONSTANTS lc_regex_ts_with_hour TYPE string
-      VALUE `^(\d{4})-(\d{2})-(\d{2})(T)(\d{2}):(\d{2}):(\d{2})(\+)(\d{2}):(\d{2})`. "#EC NOTEXT
+      VALUE `^(\d{4})-(\d{2})-(\d{2})(T)(\d{2}):(\d{2}):(\d{2})(\+)(\d{2}):(\d{2})`.
     CONSTANTS lc_regex_ts_utc TYPE string
-      VALUE `^(\d{4})-(\d{2})-(\d{2})(T)(\d{2}):(\d{2}):(\d{2})(Z|$)`. "#EC NOTEXT
+      VALUE `^(\d{4})-(\d{2})-(\d{2})(T)(\d{2}):(\d{2}):(\d{2})(Z|$)`.
 
     DATA:
       BEGIN OF ls_timestamp,

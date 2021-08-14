@@ -337,7 +337,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     lv_item = get_item( iv_path ).
 
     IF lv_item IS NOT INITIAL AND lv_item->type = zif_abapgit_ajson=>node_type-string.
-      FIND FIRST OCCURRENCE OF REGEX '^(\d{4})-(\d{2})-(\d{2})(T|$)' "#EC NOTEXT
+      FIND FIRST OCCURRENCE OF REGEX '^(\d{4})-(\d{2})-(\d{2})(T|$)'
         IN lv_item->value
         SUBMATCHES lv_y lv_m lv_d.
       CONCATENATE lv_y lv_m lv_d INTO rv_value.

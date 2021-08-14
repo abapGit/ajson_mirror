@@ -137,7 +137,7 @@ CLASS lcl_mapping_camel IMPLEMENTATION.
 
     rv_result = iv_name.
 
-    REPLACE ALL OCCURRENCES OF REGEX `([a-z])([A-Z])` IN rv_result WITH `$1_$2`. "#EC NOTEXT
+    REPLACE ALL OCCURRENCES OF REGEX `([a-z])([A-Z])` IN rv_result WITH `$1_$2`.
 
   ENDMETHOD.
 
