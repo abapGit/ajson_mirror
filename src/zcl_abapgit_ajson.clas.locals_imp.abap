@@ -145,17 +145,22 @@ ENDCLASS.
 CLASS lcl_json_parser IMPLEMENTATION.
 
   METHOD parse.
-    DATA lx_sxml TYPE REF TO cx_sxml_parse_error.
+    DATA lx_sxml_parse TYPE REF TO cx_sxml_parse_error.
+    DATA lx_sxml TYPE REF TO cx_sxml_error.
     DATA lv_location TYPE string.
     TRY.
         rt_json_tree = _parse( iv_json ).
-      CATCH cx_sxml_parse_error INTO lx_sxml.
+      CATCH cx_sxml_parse_error INTO lx_sxml_parse.
         lv_location = _get_location(
         iv_json   = iv_json
-        iv_offset = lx_sxml->xml_offset ).
+        iv_offset = lx_sxml_parse->xml_offset ).
+        zcx_abapgit_ajson_error=>raise(
+        iv_msg      = |Json parsing error (SXML): { lx_sxml_parse->get_text( ) }|
+        iv_location = lv_location ).
+      CATCH cx_sxml_error INTO lx_sxml.
         zcx_abapgit_ajson_error=>raise(
         iv_msg      = |Json parsing error (SXML): { lx_sxml->get_text( ) }|
-        iv_location = lv_location ).
+        iv_location = '@PARSER' ).
     ENDTRY.
   ENDMETHOD.
 
