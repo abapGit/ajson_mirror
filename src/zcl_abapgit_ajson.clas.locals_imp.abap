@@ -770,7 +770,8 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
         " Find target field reference
           CASE is_parent_type-type_kind.
             WHEN 'h'. " Table
-              IF NOT ls_node_type-target_field_name CO '0123456789'. " Does not affect anything actually but for integrity
+              IF NOT ls_node_type-target_field_name CO '0123456789'.
+              " Does not affect anything actually but for integrity
                 zcx_abapgit_ajson_error=>raise( 'Need index to access tables' ).
               ENDIF.
 
