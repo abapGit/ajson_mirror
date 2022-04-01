@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/abapGit/ajson_mirror#readme",
   "dependencies": {
-    "@abaplint/cli": "^2.85.33"
+    "@abaplint/cli": "^2.86.5"
   }
 }
