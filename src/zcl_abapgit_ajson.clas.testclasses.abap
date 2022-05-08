@@ -1864,6 +1864,7 @@ CLASS ltcl_writer_test DEFINITION FINAL
     METHODS set_obj_w_date_time FOR TESTING RAISING zcx_abapgit_ajson_error.
     METHODS set_tab FOR TESTING RAISING zcx_abapgit_ajson_error.
     METHODS set_tab_hashed FOR TESTING RAISING zcx_abapgit_ajson_error.
+    METHODS set_tab_nested_struct FOR TESTING RAISING zcx_abapgit_ajson_error.
     METHODS prove_path_exists FOR TESTING RAISING zcx_abapgit_ajson_error.
     METHODS delete_subtree FOR TESTING RAISING zcx_abapgit_ajson_error.
     METHODS delete FOR TESTING RAISING zcx_abapgit_ajson_error.
@@ -2262,6 +2263,56 @@ CLASS ltcl_writer_test IMPLEMENTATION.
       iv_val  = lt_tab ).
     cl_abap_unit_assert=>assert_equals(
       act = lo_cut->mt_json_tree
+      exp = lo_nodes->sorted( ) ).
+
+  ENDMETHOD.
+
+  METHOD set_tab_nested_struct.
+
+    TYPES:
+      BEGIN OF ty_include,
+        str TYPE string,
+        int TYPE i,
+      END OF ty_include,
+      BEGIN OF ty_struct.
+        INCLUDE TYPE ty_include.
+    TYPES: dat TYPE xstring,
+      END OF ty_struct,
+      ty_tab TYPE STANDARD TABLE OF ty_struct WITH DEFAULT KEY.
+
+    DATA lo_nodes TYPE REF TO lcl_nodes_helper.
+    DATA li_cut TYPE REF TO zif_abapgit_ajson.
+    DATA ls_tab TYPE ty_struct.
+    DATA lt_tab TYPE ty_tab.
+
+    li_cut = zcl_abapgit_ajson=>create_empty( ).
+
+    ls_tab-str = 'hello'.
+    ls_tab-int = 123.
+    ls_tab-dat = '4041'.
+    INSERT ls_tab INTO TABLE lt_tab.
+    ls_tab-str = 'world'.
+    ls_tab-int = 456.
+    ls_tab-dat = '6061'.
+    INSERT ls_tab INTO TABLE lt_tab.
+
+    " prepare source
+    CREATE OBJECT lo_nodes.
+    lo_nodes->add( '        |      |array  |     |0|2' ).
+    lo_nodes->add( '/       |1     |object |     |1|3' ).
+    lo_nodes->add( '/       |2     |object |     |2|3' ).
+    lo_nodes->add( '/1/     |dat   |str    |4041 |0|0' ).
+    lo_nodes->add( '/1/     |int   |num    |123  |0|0' ).
+    lo_nodes->add( '/1/     |str   |str    |hello|0|0' ).
+    lo_nodes->add( '/2/     |dat   |str    |6061 |0|0' ).
+    lo_nodes->add( '/2/     |int   |num    |456  |0|0' ).
+    lo_nodes->add( '/2/     |str   |str    |world|0|0' ).
+
+    li_cut->set(
+      iv_path = '/'
+      iv_val  = lt_tab ).
+    cl_abap_unit_assert=>assert_equals(
+      act = li_cut->mt_json_tree
       exp = lo_nodes->sorted( ) ).
 
   ENDMETHOD.
@@ -2999,6 +3050,7 @@ CLASS ltcl_integrated IMPLEMENTATION.
     DATA li_writer TYPE REF TO zif_abapgit_ajson.
     DATA lv_exp TYPE string.
     DATA: BEGIN OF ls_dummy, x TYPE i, END OF ls_dummy.
+    DATA: BEGIN OF ls_data, str TYPE string, cls TYPE REF TO zcl_abapgit_ajson, END OF ls_data.
 
     ls_dummy-x = 1.
     lo_cut    = zcl_abapgit_ajson=>create_empty( ).
@@ -3064,6 +3116,19 @@ CLASS ltcl_integrated IMPLEMENTATION.
       occ = 0 ).
     cl_abap_unit_assert=>assert_equals(
       act = lo_cut->stringify( iv_indent = 2 )
+      exp = lv_exp ).
+
+    " structure with initial ref to class
+    ls_data-str = 'test'.
+
+    li_writer = lo_cut.
+    li_writer->set(
+      iv_path = '/'
+      iv_val  = ls_data ).
+
+    lv_exp = '{"cls":null,"str":"test"}'.
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_cut->stringify( )
       exp = lv_exp ).
 
   ENDMETHOD.
