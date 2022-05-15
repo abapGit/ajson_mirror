@@ -1063,7 +1063,7 @@ CLASS lcl_abap_to_json DEFINITION FINAL.
 
     METHODS convert_ajson
       IMPORTING
-        io_json TYPE REF TO zcl_abapgit_ajson
+        io_json TYPE REF TO zif_abapgit_ajson
         is_prefix TYPE zif_abapgit_ajson=>ty_path_name
         iv_index TYPE i DEFAULT 0
       CHANGING

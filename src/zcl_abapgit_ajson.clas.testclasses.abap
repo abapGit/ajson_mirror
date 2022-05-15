@@ -2156,11 +2156,11 @@ CLASS ltcl_writer_test IMPLEMENTATION.
 
     " Prepare source
     CREATE OBJECT lo_nodes.
-    lo_nodes->add( '        |      |object |         ||1' ).
-    lo_nodes->add( '/       |x     |object |         ||3' ).
-    lo_nodes->add( '/x/     |b     |str    |abc      ||0' ).
-    lo_nodes->add( '/x/     |c     |num    |10       ||0' ).
-    lo_nodes->add( '/x/     |d     |str    |20220401 ||0' ).
+    lo_nodes->add( '        |      |object |           ||1' ).
+    lo_nodes->add( '/       |x     |object |           ||3' ).
+    lo_nodes->add( '/x/     |b     |str    |abc        ||0' ).
+    lo_nodes->add( '/x/     |c     |num    |10         ||0' ).
+    lo_nodes->add( '/x/     |d     |str    |2022-04-01 ||0' ).
 
     li_writer->set(
       iv_path = '/x'
@@ -2934,6 +2934,7 @@ CLASS ltcl_integrated DEFINITION
     METHODS stringify FOR TESTING RAISING zcx_abapgit_ajson_error.
     METHODS item_order_integrated FOR TESTING RAISING zcx_abapgit_ajson_error.
     METHODS chaining FOR TESTING RAISING zcx_abapgit_ajson_error.
+    METHODS push_json FOR TESTING RAISING zcx_abapgit_ajson_error.
 
 ENDCLASS.
 
@@ -3200,6 +3201,42 @@ CLASS ltcl_integrated IMPLEMENTATION.
         iv_val  = '1' ) ).
 
     cl_abap_unit_assert=>assert_bound( li_cut->keep_item_order( ) ).
+
+  ENDMETHOD.
+
+  METHOD push_json.
+
+    DATA li_cut TYPE REF TO zif_abapgit_ajson.
+    DATA li_sub TYPE REF TO zif_abapgit_ajson.
+    DATA lv_act TYPE string.
+    DATA lv_exp TYPE string.
+
+    li_cut = zcl_abapgit_ajson=>create_empty( ).
+    li_sub = zcl_abapgit_ajson=>create_empty( )->set(
+      iv_path = 'a'
+      iv_val  = '1' ).
+
+    li_cut->touch_array( '/list' ).
+    li_cut->push(
+      iv_path = '/list'
+      iv_val  = 'hello' ).
+    li_cut->push(
+      iv_path = '/list'
+      iv_val  = zcl_abapgit_ajson=>create_empty( )->set(
+        iv_path = 'a'
+        iv_val  = '1' ) ).
+    li_cut->push(
+      iv_path = '/list'
+      iv_val  = zcl_abapgit_ajson=>create_empty( )->set(
+        iv_path = '/'
+        iv_val  = 'world' ) ).
+
+    lv_act = li_cut->stringify( ).
+    lv_exp = '{"list":["hello",{"a":"1"},"world"]}'.
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lv_act
+      exp = lv_exp ).
 
   ENDMETHOD.
 
