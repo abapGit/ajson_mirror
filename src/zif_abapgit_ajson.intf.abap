@@ -48,6 +48,27 @@ INTERFACE zif_abapgit_ajson
 
   DATA mt_json_tree TYPE ty_nodes_ts READ-ONLY.
 
+  " CLONING
+  METHODS clone
+    RETURNING
+      VALUE(ri_json) TYPE REF TO zif_abapgit_ajson
+    RAISING
+      zcx_abapgit_ajson_error.
+  METHODS filter
+    IMPORTING
+      ii_filter TYPE REF TO zif_abapgit_ajson_filter
+    RETURNING
+      VALUE(ri_json) TYPE REF TO zif_abapgit_ajson
+    RAISING
+      zcx_abapgit_ajson_error.
+  METHODS map
+    IMPORTING
+      ii_mapper TYPE REF TO zif_abapgit_ajson_mapping
+    RETURNING
+      VALUE(ri_json) TYPE REF TO zif_abapgit_ajson
+    RAISING
+      zcx_abapgit_ajson_error.
+
   " METHODS
 
   METHODS freeze.
