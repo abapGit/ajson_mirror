@@ -1,6 +1,6 @@
 CLASS zcl_abapgit_ajson DEFINITION
   PUBLIC
-  CREATE PRIVATE .
+  CREATE PUBLIC .
 
   PUBLIC SECTION.
 
@@ -36,6 +36,11 @@ CLASS zcl_abapgit_ajson DEFINITION
       stringify FOR zif_abapgit_ajson~stringify.
 
     ALIASES:
+      clone FOR zif_abapgit_ajson~clone,
+      filter FOR zif_abapgit_ajson~filter,
+      map FOR zif_abapgit_ajson~map.
+
+    ALIASES:
       mt_json_tree FOR zif_abapgit_ajson~mt_json_tree,
       keep_item_order FOR zif_abapgit_ajson~keep_item_order,
       format_datetime FOR zif_abapgit_ajson~format_datetime,
@@ -51,23 +56,35 @@ CLASS zcl_abapgit_ajson DEFINITION
       RAISING
         zcx_abapgit_ajson_error .
 
-    CLASS-METHODS create_empty
+    CLASS-METHODS create_empty " Might be deprecated, prefer using new( ) or create object
       IMPORTING
         !ii_custom_mapping TYPE REF TO zif_abapgit_ajson_mapping OPTIONAL
+        iv_keep_item_order TYPE abap_bool DEFAULT abap_false
+        iv_format_datetime TYPE abap_bool DEFAULT abap_true
       RETURNING
         VALUE(ro_instance) TYPE REF TO zcl_abapgit_ajson.
 
     " Experimental ! May change
-    CLASS-METHODS create_from
+    CLASS-METHODS create_from " TODO, rename to 'from' ?
       IMPORTING
         !ii_source_json TYPE REF TO zif_abapgit_ajson
-        !ii_filter TYPE REF TO zif_abapgit_ajson_filter OPTIONAL
+        !ii_filter TYPE REF TO zif_abapgit_ajson_filter OPTIONAL " Might be deprecated, use filter() instead
+        !ii_mapper TYPE REF TO zif_abapgit_ajson_mapping OPTIONAL " Might be deprecated, use map() instead
       RETURNING
         VALUE(ro_instance) TYPE REF TO zcl_abapgit_ajson
       RAISING
         zcx_abapgit_ajson_error .
 
-    METHODS constructor.
+    METHODS constructor
+      IMPORTING
+        iv_keep_item_order TYPE abap_bool DEFAULT abap_false
+        iv_format_datetime TYPE abap_bool DEFAULT abap_true.
+    CLASS-METHODS new
+      IMPORTING
+        iv_keep_item_order TYPE abap_bool DEFAULT abap_false
+        iv_format_datetime TYPE abap_bool DEFAULT abap_true
+      RETURNING
+        VALUE(ro_instance) TYPE REF TO zcl_abapgit_ajson.
 
   PROTECTED SECTION.
 
@@ -107,44 +124,51 @@ ENDCLASS.
 
 CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
-  METHOD zif_abapgit_ajson~opts.
-    rs_opts-read_only       = mv_read_only.
-    rs_opts-format_datetime = mv_format_datetime.
-    rs_opts-keep_item_order = mv_keep_item_order.
-  ENDMETHOD.
 
   METHOD constructor.
-    format_datetime( abap_true ).
+    mv_keep_item_order = iv_keep_item_order.
+    format_datetime( iv_format_datetime ).
   ENDMETHOD.
 
 
   METHOD create_empty.
-    CREATE OBJECT ro_instance.
+    CREATE OBJECT ro_instance
+      EXPORTING
+        iv_format_datetime = iv_format_datetime
+        iv_keep_item_order = iv_keep_item_order.
     ro_instance->mi_custom_mapping = ii_custom_mapping.
   ENDMETHOD.
 
 
   METHOD create_from.
 
-    DATA lo_filter_runner TYPE REF TO lcl_filter_runner.
+    DATA lo_mutator_queue TYPE REF TO lcl_mutator_queue.
 
     IF ii_source_json IS NOT BOUND.
       zcx_abapgit_ajson_error=>raise( 'Source not bound' ).
     ENDIF.
 
-    CREATE OBJECT ro_instance.
+    CREATE OBJECT ro_instance
+      EXPORTING
+        iv_format_datetime = ii_source_json->opts( )-format_datetime
+        iv_keep_item_order = ii_source_json->opts( )-keep_item_order.
 
-    IF ii_filter IS BOUND.
-      CREATE OBJECT lo_filter_runner.
-      lo_filter_runner->run(
-        EXPORTING
-          ii_filter = ii_filter
-          it_source_tree = ii_source_json->mt_json_tree
-        CHANGING
-          ct_dest_tree = ro_instance->mt_json_tree ).
-    ELSE.
+    IF ii_filter IS NOT BOUND AND ii_mapper IS NOT BOUND.
       ro_instance->mt_json_tree = ii_source_json->mt_json_tree.
-      " Copy keep order and custom mapping ???
+    ELSE.
+      CREATE OBJECT lo_mutator_queue.
+      IF ii_mapper IS BOUND.
+        " Mapping goes first. But maybe it should be a freely definable queue of processors ?
+        lo_mutator_queue->add( lcl_mapper_runner=>new( ii_mapper ) ).
+      ENDIF.
+      IF ii_filter IS BOUND.
+        lo_mutator_queue->add( lcl_filter_runner=>new( ii_filter ) ).
+      ENDIF.
+      lo_mutator_queue->lif_mutator_runner~run(
+        EXPORTING
+          it_source_tree = ii_source_json->mt_json_tree
+        IMPORTING
+          et_dest_tree = ro_instance->mt_json_tree ).
     ENDIF.
 
   ENDMETHOD.
@@ -198,6 +222,14 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
       GET REFERENCE OF <item> INTO rv_item.
     ENDIF.
 
+  ENDMETHOD.
+
+
+  METHOD new.
+    CREATE OBJECT ro_instance
+      EXPORTING
+        iv_format_datetime = iv_format_datetime
+        iv_keep_item_order = iv_keep_item_order.
   ENDMETHOD.
 
 
@@ -313,6 +345,11 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD zif_abapgit_ajson~clone.
+    ri_json = create_from( me ).
+  ENDMETHOD.
+
+
   METHOD zif_abapgit_ajson~delete.
 
     read_only_watchdog( ).
@@ -331,6 +368,13 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
   METHOD zif_abapgit_ajson~exists.
     rv_exists = boolc( get_item( iv_path ) IS NOT INITIAL ).
+  ENDMETHOD.
+
+
+  METHOD zif_abapgit_ajson~filter.
+    ri_json = create_from(
+      ii_source_json = me
+      ii_filter      = ii_filter ).
   ENDMETHOD.
 
 
@@ -467,6 +511,13 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD zif_abapgit_ajson~map.
+    ri_json = create_from(
+      ii_source_json = me
+      ii_mapper      = ii_mapper ).
+  ENDMETHOD.
+
+
   METHOD zif_abapgit_ajson~members.
 
     DATA lv_normalized_path TYPE string.
@@ -478,6 +529,13 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
       APPEND <item>-name TO rt_members.
     ENDLOOP.
 
+  ENDMETHOD.
+
+
+  METHOD zif_abapgit_ajson~opts.
+    rs_opts-read_only       = mv_read_only.
+    rs_opts-format_datetime = mv_format_datetime.
+    rs_opts-keep_item_order = mv_keep_item_order.
   ENDMETHOD.
 
 
