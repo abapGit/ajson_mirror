@@ -1976,6 +1976,9 @@ CLASS ltcl_writer_test DEFINITION FINAL
     METHODS set_with_type FOR TESTING RAISING zcx_abapgit_ajson_error.
     METHODS overwrite_w_keep_order_touch FOR TESTING RAISING zcx_abapgit_ajson_error.
     METHODS overwrite_w_keep_order_set FOR TESTING RAISING zcx_abapgit_ajson_error.
+    METHODS setx FOR TESTING RAISING zcx_abapgit_ajson_error.
+    METHODS setx_float FOR TESTING RAISING zcx_abapgit_ajson_error.
+    METHODS setx_complex FOR TESTING RAISING zcx_abapgit_ajson_error.
 
     METHODS set_with_type_slice
       IMPORTING
@@ -3080,6 +3083,112 @@ CLASS ltcl_writer_test IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals(
       act = li_cut->stringify( )
       exp = '{"b":0,"a":[]}' ). " still ordered after touch with clear
+
+  ENDMETHOD.
+
+  METHOD setx.
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:1' )->stringify( )
+      exp = '{"a":1}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a : 1' )->stringify( )
+      exp = '{"a":1}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:"1"' )->stringify( )
+      exp = '{"a":"1"}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:abc' )->stringify( )
+      exp = '{"a":"abc"}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:null' )->stringify( )
+      exp = '{"a":null}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:true' )->stringify( )
+      exp = '{"a":true}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:"true"' )->stringify( )
+      exp = '{"a":"true"}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:false' )->stringify( )
+      exp = '{"a":false}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a/b:1' )->stringify( )
+      exp = '{"a":{"b":1}}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/:1' )->stringify( )
+      exp = '1' ). " Hmmm ?
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( ':1' )->stringify( )
+      exp = '1' ). " Hmmm ?
+
+    " TODO some negative tests like "/a:", ""
+
+  ENDMETHOD.
+
+  METHOD setx_float.
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:1.123' )->stringify( )
+      exp = '{"a":1.123}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:00.123' )->stringify( )
+      exp = '{"a":"00.123"}' ). " hmmm
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:.123' )->stringify( )
+      exp = '{"a":".123"}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:123.' )->stringify( )
+      exp = '{"a":"123."}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:1..123' )->stringify( )
+      exp = '{"a":"1..123"}' ).
+
+  ENDMETHOD.
+
+  METHOD setx_complex.
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:{"b" : 1}' )->stringify( )
+      exp = '{"a":{"b":1}}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:{}' )->stringify( )
+      exp = '{"a":{}}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:[1, 2]' )->stringify( )
+      exp = '{"a":[1,2]}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abapgit_ajson=>new( )->setx( '/a:[]' )->stringify( )
+      exp = '{"a":[]}' ).
+
+    TRY.
+        zcl_abapgit_ajson=>new( )->setx( '/a:{"b" : 1' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_abapgit_ajson_error.
+    ENDTRY.
+
+    TRY.
+        zcl_abapgit_ajson=>new( )->setx( '/a:[1, 2' ).
+        cl_abap_unit_assert=>fail( ).
+      CATCH zcx_abapgit_ajson_error.
+    ENDTRY.
 
   ENDMETHOD.
 
