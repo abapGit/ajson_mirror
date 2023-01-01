@@ -187,6 +187,14 @@ INTERFACE zif_abapgit_ajson
     RAISING
       zcx_abapgit_ajson_error.
 
+  METHODS setx
+    IMPORTING
+      iv_param TYPE string
+    RETURNING
+      VALUE(ri_json) TYPE REF TO zif_abapgit_ajson
+    RAISING
+      zcx_abapgit_ajson_error.
+
   METHODS set_boolean
     IMPORTING
       iv_path TYPE string
