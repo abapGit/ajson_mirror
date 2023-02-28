@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Mirror of (ajson)[https://github.com/sbcgua/ajson] mirror to zcl_abapgit_ namespace",
   "scripts": {
-    "clone": "git clone https://github.com/sbcgua/ajson input && rm -rf input/src/perf && mv input/src/core/* input/src && mv input/src/libs/* input/src",
+    "clone": "git clone https://github.com/sbcgua/ajson input && rm input/src/core/package.devc.xml && rm input/src/libs/package.devc.xml && rm -rf input/src/perf && mv input/src/core/* input/src && mv input/src/libs/* input/src",
     "lint_result": "abaplint abaplint.json",
     "fix_result": "abaplint abaplint.json --fix",
     "rename": "abaplint abaplint_rename.json --rename && rm src/* && cp output/input/src/* src/",
