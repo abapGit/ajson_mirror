@@ -23,6 +23,7 @@
   "rules": {
     "7bit_ascii": false,
     "abapdoc": false,
+    "parser_702_chaining": true,
     "allowed_object_naming": true,
     "allowed_object_types": false,
     "ambiguous_statement": false,
