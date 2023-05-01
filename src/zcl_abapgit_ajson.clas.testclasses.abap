@@ -1996,6 +1996,7 @@ CLASS ltcl_json_to_abap IMPLEMENTATION.
     DATA lo_cut TYPE REF TO zcl_abapgit_ajson.
     DATA ls_act TYPE ty_struc.
     DATA ls_exp  TYPE ty_struc.
+    DATA li_json TYPE REF TO zif_abapgit_ajson.
     DATA lo_nodes TYPE REF TO lcl_nodes_helper.
 
     CREATE OBJECT lo_nodes.
@@ -2019,7 +2020,8 @@ CLASS ltcl_json_to_abap IMPLEMENTATION.
       exp = ls_exp ).
 
     CLEAR ls_act.
-    lo_cut->to_abap_corresponding_only( )->to_abap( IMPORTING ev_container = ls_act ).
+    li_json = lo_cut->to_abap_corresponding_only( ).
+    li_json->to_abap( IMPORTING ev_container = ls_act ).
     cl_abap_unit_assert=>assert_equals(
       act = ls_act
       exp = ls_exp ).
