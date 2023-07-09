@@ -592,6 +592,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     DATA ls_split_path TYPE zif_abapgit_ajson_types=>ty_path_name.
     DATA lr_parent TYPE REF TO zif_abapgit_ajson_types=>ty_node.
     DATA ls_deleted_node TYPE zif_abapgit_ajson_types=>ty_node.
+    DATA lv_item_order TYPE zif_abapgit_ajson_types=>ty_node-order.
 
     read_only_watchdog( ).
 
@@ -635,6 +636,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
       ir_parent = lr_parent
       iv_path   = ls_split_path-path
       iv_name   = ls_split_path-name ).
+    lv_item_order = ls_deleted_node-order.
 
     " convert to json
     DATA lt_new_nodes TYPE zif_abapgit_ajson_types=>ty_nodes_tt.
@@ -644,12 +646,15 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
       lv_array_index = lcl_utils=>validate_array_index(
         iv_path  = ls_split_path-path
         iv_index = ls_split_path-name ).
+    ELSEIF lr_parent->type = zif_abapgit_ajson_types=>node_type-object
+      AND lv_item_order = 0 AND ms_opts-keep_item_order = abap_true.
+      lv_item_order = lr_parent->children + 1.
     ENDIF.
 
     IF iv_node_type IS NOT INITIAL.
       lt_new_nodes = lcl_abap_to_json=>insert_with_type(
         is_opts            = ms_opts
-        iv_item_order      = ls_deleted_node-order
+        iv_item_order      = lv_item_order
         iv_data            = iv_val
         iv_type            = iv_node_type
         iv_array_index     = lv_array_index
@@ -658,7 +663,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     ELSE.
       lt_new_nodes = lcl_abap_to_json=>convert(
         is_opts            = ms_opts
-        iv_item_order      = ls_deleted_node-order
+        iv_item_order      = lv_item_order
         iv_data            = iv_val
         iv_array_index     = lv_array_index
         is_prefix          = ls_split_path

@@ -1164,6 +1164,7 @@ CLASS lcl_abap_to_json DEFINITION FINAL.
         io_json TYPE REF TO zif_abapgit_ajson
         is_prefix TYPE zif_abapgit_ajson_types=>ty_path_name
         iv_index TYPE i DEFAULT 0
+        iv_item_order TYPE i DEFAULT 0
       CHANGING
         ct_nodes TYPE zif_abapgit_ajson_types=>ty_nodes_tt
       RAISING
@@ -1324,6 +1325,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
               io_json   = iv_data
               is_prefix = is_prefix
               iv_index  = iv_index
+              iv_item_order = iv_item_order
             CHANGING
               ct_nodes = ct_nodes ).
         ELSE.
@@ -1351,6 +1353,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
         <dst>-path  = is_prefix-path.
         <dst>-name  = is_prefix-name.
         <dst>-index = iv_index.
+        <dst>-order = iv_item_order.
       ELSE.
         <dst>-path = is_prefix-path && is_prefix-name && <dst>-path.
       ENDIF.

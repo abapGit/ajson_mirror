@@ -2101,6 +2101,7 @@ CLASS ltcl_writer_test DEFINITION FINAL
     METHODS setx FOR TESTING RAISING zcx_abapgit_ajson_error.
     METHODS setx_float FOR TESTING RAISING zcx_abapgit_ajson_error.
     METHODS setx_complex FOR TESTING RAISING zcx_abapgit_ajson_error.
+    METHODS setx_complex_w_keep_order FOR TESTING RAISING zcx_abapgit_ajson_error.
 
     METHODS set_with_type_slice
       IMPORTING
@@ -3321,6 +3322,43 @@ CLASS ltcl_writer_test IMPLEMENTATION.
         cl_abap_unit_assert=>fail( ).
       CATCH zcx_abapgit_ajson_error.
     ENDTRY.
+
+  ENDMETHOD.
+
+  METHOD setx_complex_w_keep_order.
+
+    DATA li_cut TYPE REF TO zif_abapgit_ajson.
+    DATA:
+      BEGIN OF ls_dummy,
+        f TYPE i VALUE 5,
+        e TYPE i VALUE 6,
+      END OF ls_dummy.
+
+    li_cut = zcl_abapgit_ajson=>new( iv_keep_item_order = abap_true ).
+    li_cut->setx( '/c:3' ).
+    li_cut->set(
+      iv_path = '/b'
+      iv_val  = ls_dummy ).
+    li_cut->setx( '/a:1' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = li_cut->stringify( )
+      exp = '{"c":3,"b":{"f":5,"e":6},"a":1}' ).
+
+    li_cut->setx( '/b:{"z":9,"y":8}' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = li_cut->stringify( )
+      exp = '{"c":3,"b":{"z":9,"y":8},"a":1}' ).
+    " TODO: a subtle bug here. The '/b:{"z":9,"y":8}' creates a json internally
+    " without the ordering. It's just by chance that this UT passes, but the implementation
+    " does not guarantee it. The parser should be instructed to keep the order of the parsed json
+
+    li_cut->setx( '/0:9' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = li_cut->stringify( )
+      exp = '{"c":3,"b":{"z":9,"y":8},"a":1,"0":9}' ).
 
   ENDMETHOD.
 
