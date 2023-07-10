@@ -50,9 +50,10 @@ CLASS zcl_abapgit_ajson DEFINITION
 
     CLASS-METHODS parse
       IMPORTING
-        !iv_json           TYPE string
-        !iv_freeze         TYPE abap_bool DEFAULT abap_false
-        !ii_custom_mapping TYPE REF TO zif_abapgit_ajson_mapping OPTIONAL
+        !iv_json            TYPE string
+        !iv_freeze          TYPE abap_bool DEFAULT abap_false
+        !ii_custom_mapping  TYPE REF TO zif_abapgit_ajson_mapping OPTIONAL
+        !iv_keep_item_order TYPE abap_bool DEFAULT abap_false
       RETURNING
         VALUE(ro_instance) TYPE REF TO zcl_abapgit_ajson
       RAISING
@@ -247,8 +248,11 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
     CREATE OBJECT ro_instance.
     CREATE OBJECT lo_parser.
-    ro_instance->mt_json_tree = lo_parser->parse( iv_json ).
+    ro_instance->mt_json_tree = lo_parser->parse(
+      iv_json            = iv_json
+      iv_keep_item_order = iv_keep_item_order ).
     ro_instance->mi_custom_mapping = ii_custom_mapping.
+    ro_instance->ms_opts-keep_item_order = iv_keep_item_order.
 
     IF iv_freeze = abap_true.
       ro_instance->freeze( ).
@@ -730,7 +734,9 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
       "Expect object/array, but no further checks, parser will catch errors
       zif_abapgit_ajson~set(
         iv_path = lv_path
-        iv_val  = parse( lv_val ) ).
+        iv_val  = parse(
+          iv_json = lv_val
+          iv_keep_item_order = ms_opts-keep_item_order ) ).
     ELSE. " string
       lv_last = strlen( lv_val ) - 1.
       IF lv_val+0(1) = '"' AND lv_val+lv_last(1) = '"'.
@@ -852,7 +858,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    CLEAR: ls_item-path, ls_item-name. " this becomes a new root
+    CLEAR: ls_item-path, ls_item-name, ls_item-order. " this becomes a new root
     INSERT ls_item INTO TABLE lo_section->mt_json_tree.
 
     lv_path_pattern = lv_normalized_path && `*`.
