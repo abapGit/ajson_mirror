@@ -189,6 +189,7 @@ CLASS lcl_json_parser DEFINITION FINAL.
     METHODS parse
       IMPORTING
         iv_json TYPE string
+        iv_keep_item_order TYPE abap_bool DEFAULT abap_false
       RETURNING
         VALUE(rt_json_tree) TYPE zif_abapgit_ajson_types=>ty_nodes_tt
       RAISING
@@ -201,6 +202,7 @@ CLASS lcl_json_parser DEFINITION FINAL.
 
     DATA mt_stack TYPE ty_stack_tt.
     DATA mv_stack_path TYPE string.
+    DATA mv_keep_item_order TYPE abap_bool.
 
     METHODS raise
       IMPORTING
@@ -231,6 +233,9 @@ CLASS lcl_json_parser IMPLEMENTATION.
     DATA lx_sxml_parse TYPE REF TO cx_sxml_parse_error.
     DATA lx_sxml TYPE REF TO cx_dynamic_check.
     DATA lv_location TYPE string.
+
+    mv_keep_item_order = iv_keep_item_order.
+
     TRY.
       " TODO sane JSON check:
       " JSON can be true,false,null,(-)digits
@@ -248,6 +253,7 @@ CLASS lcl_json_parser IMPLEMENTATION.
         iv_msg      = |Json parsing error (SXML): { lx_sxml->get_text( ) }|
         iv_location = '@PARSER' ).
     ENDTRY.
+
   ENDMETHOD.
 
   METHOD _get_location.
@@ -337,6 +343,9 @@ CLASS lcl_json_parser IMPLEMENTATION.
                   <item>-name = lo_attr->get_value( ).
                 ENDIF.
               ENDLOOP.
+              IF mv_keep_item_order = abap_true.
+                <item>-order = lr_stack_top->children.
+              ENDIF.
             ENDIF.
             IF <item>-name IS INITIAL.
               raise( 'Node without name (maybe not JSON)' ).
