@@ -15,7 +15,7 @@
     }
   ],
   "rename": {
-    "output": "output",  
+    "output": "output",
     "patterns": [
       {"type": "CLAS", "oldName": "zcl_ajson_ref_initializer_lib", "newName": "zcl_abapgit_ajson_ref_init_lib"},
       {"type": "INTF", "oldName": "zif_ajson_ref_initializer", "newName": "zif_abapgit_ajson_ref_init"},
