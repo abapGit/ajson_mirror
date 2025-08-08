@@ -16,7 +16,11 @@
   ],
   "rename": {
     "output": "output",
-    "patterns": [{"type": "CLAS|INTF", "oldName": "z(.*)_ajson", "newName": "z$1_abapgit_ajson"}]
+    "patterns": [
+      {"type": "CLAS", "oldName": "zcl_ajson_ref_initializer_lib", "newName": "zcl_abapgit_ajson_ref_init_lib"},
+      {"type": "INTF", "oldName": "zif_ajson_ref_initializer", "newName": "zif_abapgit_ajson_ref_init"},
+      {"type": "CLAS|INTF", "oldName": "z(.*)_ajson", "newName": "z$1_abapgit_ajson"}
+    ]
   },
   "syntax": {
     "version": "v702",
