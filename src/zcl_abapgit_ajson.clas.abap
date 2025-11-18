@@ -447,7 +447,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     IF lr_item IS NOT INITIAL AND lr_item->type = zif_abapgit_ajson_types=>node_type-string.
       FIND FIRST OCCURRENCE OF REGEX '^(\d{4})-(\d{2})-(\d{2})(T|$)'
         IN lr_item->value
-        SUBMATCHES lv_y lv_m lv_d.
+        SUBMATCHES lv_y lv_m lv_d ##REGEX_POSIX.
       CONCATENATE lv_y lv_m lv_d INTO rv_value.
     ENDIF.
 
@@ -736,7 +736,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     ENDIF.
 
     IF go_float_regex IS NOT BOUND.
-      CREATE OBJECT go_float_regex EXPORTING pattern = '^([1-9][0-9]*|0)\.[0-9]+$'.
+      CREATE OBJECT go_float_regex EXPORTING pattern = '^([1-9][0-9]*|0)\.[0-9]+$' ##REGEX_POSIX.
       " expects fractional, because ints are detected separately
     ENDIF.
 
